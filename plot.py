@@ -74,12 +74,16 @@ if __name__ == "__main__":
     #---- Loading data -----
     agile_data = pd.read_csv(args.agile, header=0, sep=" ")
     fermi_data = pd.read_csv(args.fermi, header=0, sep=" ")
-    
+
     tstart_tt = time_mjd_to_tt(args.tstart)
     tstop_tt = time_mjd_to_tt(args.tstop)
     
+    #---- Selecting data
     agile_data = agile_data[agile_data.tstart >= tstart_tt]
     agile_data = agile_data[agile_data.tstop <= tstop_tt]
 
+    fermi_data = fermi_data[fermi_data.Time_MJD >= args.tstart]
+
     plot(agile_data, fermi_data)
+
     plt.show()
