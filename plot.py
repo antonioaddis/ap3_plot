@@ -6,6 +6,8 @@ import argparse
 #from astropy.time import Time
 #from agilepy.utils.AstroUtils import AstroUtils
 
+fermi_binsize = 0.0208333335001091
+
 def time_tt_to_mjd(timett):
         """
         Convert tt to mjd. Tolerance = 0.0000001 s
@@ -44,7 +46,6 @@ def plot(agile_data, fermi_data):
     ax.errorbar(tm, agile_data["cts"], color="b", label="AGILE", fmt='.', yerr=yerr, xerr=tw)
     
     #---Fermi----
-    fermi_binsize = 0.0208333335001091
     tstart = fermi_data["Time_MJD"] - fermi_binsize/2
     tstop = tstart + fermi_binsize
     print([tstart, fermi_data["Time_MJD"], tstop])
