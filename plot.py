@@ -2,9 +2,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import argparse
-#import datetime
-#from astropy.time import Time
-#from agilepy.utils.AstroUtils import AstroUtils
 
 fermi_binsize = 0.0208333335001091
 
@@ -48,8 +45,9 @@ def plot(agile_data, fermi_data):
     #---Fermi----
     tstart = fermi_data["Time_MJD"] - fermi_binsize/2
     tstop = tstart + fermi_binsize
-    print([tstart, fermi_data["Time_MJD"], tstop])
+    #print([tstart, fermi_data["Time_MJD"], tstop])
     fermi_yerr = fermi_data["count_rate_based_error_(cts/s)"] * fermi_data["exposure_(cm^2/s)"]
+    
     ax.errorbar(fermi_data["Time_MJD"], fermi_data["counts"], color="r", label="FERMI", fmt="none", xerr=[fermi_data["Time_MJD"] - tstart,tstop - fermi_data["Time_MJD"]], yerr=fermi_yerr)
     
     
