@@ -34,7 +34,7 @@ def plot(ax, agile_data, fermi_data, line1, line2):
     #---AGILE----
     t_mjd = []
     tm = (time_tt_to_mjd(agile_data["tstart"]) + time_tt_to_mjd(agile_data["tstop"])) / 2
-    agile_data.loc[agile_data['rate'] == 0, 'rateError'] = 0
+    agile_data.loc[agile_data['cts'] == 0, 'rateError'] = 0
     yerr = agile_data["rateError"]*1e8
     print(agile_data["tstart"], agile_data["tstop"], agile_data["cts"], agile_data["exp"], agile_data["rate"]*1e8, agile_data["rateError"]*1e8)
     tw = tm -  time_tt_to_mjd(agile_data["tstart"])
@@ -47,7 +47,7 @@ def plot(ax, agile_data, fermi_data, line1, line2):
     # #print([tstart, fermi_data["Time_MJD"], tstop])
     # fermi_yerr = fermi_data["count_rate_based_error_(cts/s)"] * fermi_data["exposure_(cm^2/s)"]
     tmFermi = (time_tt_to_mjd(fermi_data["tstart"]) + time_tt_to_mjd(fermi_data["tstop"])) / 2
-    fermi_data.loc[fermi_data['rate'] == 0, 'rateError'] = 0
+    fermi_data.loc[fermi_data['cts'] == 0, 'rateError'] = 0
     yerrFermi = fermi_data["rateError"]*1e8
     #print(fermi_data["tstart"], fermi_data["tstop"], fermi_data["rateError"], fermi_data["rate"])
     twFermi = tmFermi -  time_tt_to_mjd(fermi_data["tstart"])
