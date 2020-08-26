@@ -74,16 +74,6 @@ def plot_offaxis(ax, path, tstart, tstop, zmax, step, t0, line1, line2):
     ax.plot(agl_filt - t0, agl_sep_filt, color='blue', label='AGILE')
 
     ax.plot(lat_filt - t0, lat_sep_filt, color='red', label='Fermi')
-    
-    #foundmin = False
-    #foundmaj = False
-    #for l in lat_sep_filt:
-    #    if l < 60 and not foundmin:
-    #        found = True
-    #        ax.axvline(l, linestyle='--', color='k', linewidth=0.5)
-    #    if l > 60 and not found:
-
-
         
     ax.axvline(line2, linestyle='--', color='k', linewidth=0.5)
 
