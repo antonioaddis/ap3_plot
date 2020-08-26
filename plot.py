@@ -38,6 +38,7 @@ def plot(agile_data, fermi_data):
     t_mjd = []
     tm = (time_tt_to_mjd(agile_data["tstart"]) + time_tt_to_mjd(agile_data["tstop"])) / 2
     yerr = agile_data["rate_error"] * agile_data["exp"]
+    print(agile_data["tstart"], agile_data["tstop"], agile_data["rate_error"])
     tw = tm -  time_tt_to_mjd(agile_data["tstart"])
 
     ax.errorbar(tm, agile_data["cts"], color="b", label="AGILE", fmt='.', yerr=yerr, xerr=tw)
@@ -73,15 +74,16 @@ if __name__ == "__main__":
     #---- Loading data -----
     agile_data = pd.read_csv(args.agile, header=0, sep=" ")
     fermi_data = pd.read_csv(args.fermi, header=0, sep=" ")
-
+    print(agile_data)
     tstart_tt = time_mjd_to_tt(args.tstart)
     tstop_tt = time_mjd_to_tt(args.tstop)
     
     #---- Selecting data
     agile_data = agile_data[agile_data.tstart >= tstart_tt]
     agile_data = agile_data[agile_data.tstop <= tstop_tt]
-
+    print(agile_data)
     fermi_data = fermi_data[fermi_data.Time_MJD >= args.tstart]
+    fermi_data = fermi_data[fermi_data.Time_MJD <= args.tstop]
 
     plot(agile_data, fermi_data)
 
