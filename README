@@ -1,0 +1,1 @@
+python plot.py --agile AGILE3.ap4 --fermi FERMI3.ap4 --tstart 55599.0 --tstop 55600.0 --path_offaxis 'dir_6_60.0_55599.0_55600.0' --line1 55599.1 --line2 55599.6

@@ -34,20 +34,27 @@ def plot(ax, agile_data, fermi_data, line1, line2):
     #---AGILE----
     t_mjd = []
     tm = (time_tt_to_mjd(agile_data["tstart"]) + time_tt_to_mjd(agile_data["tstop"])) / 2
-    yerr = agile_data["rate_error"] * agile_data["exp"]
-    print(agile_data["tstart"], agile_data["tstop"], agile_data["rate_error"], agile_data["rate"])
+    agile_data.loc[agile_data['rate'] == 0, 'rateError'] = 0
+    yerr = agile_data["rateError"]*1e8
+    print(agile_data["tstart"], agile_data["tstop"], agile_data["cts"], agile_data["exp"], agile_data["rate"]*1e8, agile_data["rateError"]*1e8)
     tw = tm -  time_tt_to_mjd(agile_data["tstart"])
 
     ax.errorbar(tm, agile_data["rate"]*1e8, color="b", label="AGILE", fmt='.', yerr=yerr, xerr=tw)
     
     #---Fermi----
-    tstart = fermi_data["Time_MJD"] - fermi_binsize/2
-    tstop = tstart + fermi_binsize
-    #print([tstart, fermi_data["Time_MJD"], tstop])
-    fermi_yerr = fermi_data["count_rate_based_error_(cts/s)"] * fermi_data["exposure_(cm^2/s)"]
+    # tstart = fermi_data["Time_MJD"] - fermi_binsize/2
+    # tstop = tstart + fermi_binsize
+    # #print([tstart, fermi_data["Time_MJD"], tstop])
+    # fermi_yerr = fermi_data["count_rate_based_error_(cts/s)"] * fermi_data["exposure_(cm^2/s)"]
+    tmFermi = (time_tt_to_mjd(fermi_data["tstart"]) + time_tt_to_mjd(fermi_data["tstop"])) / 2
+    fermi_data.loc[fermi_data['rate'] == 0, 'rateError'] = 0
+    yerrFermi = fermi_data["rateError"]*1e8
+    #print(fermi_data["tstart"], fermi_data["tstop"], fermi_data["rateError"], fermi_data["rate"])
+    twFermi = tmFermi -  time_tt_to_mjd(fermi_data["tstart"])
     
-    ax.errorbar(fermi_data["Time_MJD"], fermi_data["count_rate_(cts/s)"]*1e8, color="r", label="FERMI", fmt="none", xerr=[fermi_data["Time_MJD"] - tstart,tstop - fermi_data["Time_MJD"]], yerr=fermi_yerr)
-    
+    #ax.errorbar(fermi_data["Time_MJD"], fermi_data["count_rate_(cts/s)"]*1e8, color="r", label="FERMI", fmt="none", xerr=[fermi_data["Time_MJD"] - tstart,tstop - fermi_data["Time_MJD"]], yerr=fermi_yerr)
+    ax.errorbar(tmFermi, fermi_data["rate"]*1e8, color="r", label="FERMI", fmt="none", yerr=yerrFermi, xerr=twFermi)
+
     if line1 and line2:
         ax.axvline(line1, linestyle='--', color='k', linewidth=0.5)
         ax.axvline(line2, linestyle='--', color='k', linewidth=0.5)
@@ -109,17 +116,17 @@ if __name__ == "__main__":
     #---- Loading data -----
     agile_data = pd.read_csv(args.agile, header=0, sep=" ")
     fermi_data = pd.read_csv(args.fermi, header=0, sep=" ")
-    print(agile_data)
+    #print(agile_data)
     tstart_tt = time_mjd_to_tt(args.tstart)
     tstop_tt = time_mjd_to_tt(args.tstop)
-    print(tstart_tt, tstop_tt)
+    #print(tstart_tt, tstop_tt)
     
     #---- Selecting data
     agile_data = agile_data[agile_data.tstart >= tstart_tt]
     agile_data = agile_data[agile_data.tstop <= tstop_tt]
-    print(agile_data["rate"]*1e8)
-    fermi_data = fermi_data[fermi_data.Time_MJD >= args.tstart]
-    fermi_data = fermi_data[fermi_data.Time_MJD <= args.tstop]
+    #print(agile_data["rateError"])
+    fermi_data = fermi_data[fermi_data.tstart >= tstart_tt]
+    fermi_data = fermi_data[fermi_data.tstop <= tstop_tt]
 
     f, (ax1, ax2) = plt.subplots(2)
 
