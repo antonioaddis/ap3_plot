@@ -2,7 +2,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import argparse
-#import merge
 
 fermi_binsize = 0.0208333335001091
 
