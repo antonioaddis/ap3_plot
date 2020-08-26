@@ -2,6 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import argparse
+#import merge
 
 fermi_binsize = 0.0208333335001091
 
@@ -29,19 +30,16 @@ def time_mjd_to_tt(timemjd):
         """
         return (timemjd - 53005.0) * 86400.0
 
-
-def plot(agile_data, fermi_data):
-    f = plt.figure()
-    ax = f.add_subplot(111)
+def plot(ax, agile_data, fermi_data, line1, line2):
 
     #---AGILE----
     t_mjd = []
     tm = (time_tt_to_mjd(agile_data["tstart"]) + time_tt_to_mjd(agile_data["tstop"])) / 2
     yerr = agile_data["rate_error"] * agile_data["exp"]
-    print(agile_data["tstart"], agile_data["tstop"], agile_data["rate_error"])
+    print(agile_data["tstart"], agile_data["tstop"], agile_data["rate_error"], agile_data["rate"])
     tw = tm -  time_tt_to_mjd(agile_data["tstart"])
 
-    ax.errorbar(tm, agile_data["cts"], color="b", label="AGILE", fmt='.', yerr=yerr, xerr=tw)
+    ax.errorbar(tm, agile_data["rate"]*1e8, color="b", label="AGILE", fmt='.', yerr=yerr, xerr=tw)
     
     #---Fermi----
     tstart = fermi_data["Time_MJD"] - fermi_binsize/2
@@ -49,14 +47,59 @@ def plot(agile_data, fermi_data):
     #print([tstart, fermi_data["Time_MJD"], tstop])
     fermi_yerr = fermi_data["count_rate_based_error_(cts/s)"] * fermi_data["exposure_(cm^2/s)"]
     
-    ax.errorbar(fermi_data["Time_MJD"], fermi_data["counts"], color="r", label="FERMI", fmt="none", xerr=[fermi_data["Time_MJD"] - tstart,tstop - fermi_data["Time_MJD"]], yerr=fermi_yerr)
+    ax.errorbar(fermi_data["Time_MJD"], fermi_data["count_rate_(cts/s)"]*1e8, color="r", label="FERMI", fmt="none", xerr=[fermi_data["Time_MJD"] - tstart,tstop - fermi_data["Time_MJD"]], yerr=fermi_yerr)
     
+    if line1 and line2:
+        ax.axvline(line1, linestyle='--', color='k', linewidth=0.5)
+        ax.axvline(line2, linestyle='--', color='k', linewidth=0.5)
     
     ax.ticklabel_format(axis="x", useOffset=False)
     ax.set_ylabel('Photon counts')
     ax.set_xlabel("MJD")
     ax.legend(loc='upper right', shadow=True, fontsize='xx-small')
 
+def plot_offaxis(ax, path, tstart, tstop, zmax, step, t0, line1, line2):
+
+    agl_meantime, agl_separation = np.loadtxt(path+'/time_vs_separation_agile.txt', unpack=True)
+    
+    agl_filt = agl_meantime[(agl_meantime > tstart) & (agl_meantime < tstop)]
+    agl_sep_filt = agl_separation[(agl_meantime > tstart) & (agl_meantime < tstop)]
+
+
+    lat_meantime, lat_separation = np.loadtxt(path+'/time_vs_separation_fermi.txt', unpack=True)
+
+    lat_filt = lat_meantime[(lat_meantime > tstart) & (lat_meantime < tstop)]
+    lat_sep_filt = lat_separation[(lat_meantime > tstart) & (lat_meantime < tstop)]
+
+    ax.plot(agl_filt - t0, agl_sep_filt, color='blue', label='AGILE')
+
+    ax.plot(lat_filt - t0, lat_sep_filt, color='red', label='Fermi')
+    
+    #foundmin = False
+    #foundmaj = False
+    #for l in lat_sep_filt:
+    #    if l < 60 and not foundmin:
+    #        found = True
+    #        ax.axvline(l, linestyle='--', color='k', linewidth=0.5)
+    #    if l > 60 and not found:
+
+
+        
+    ax.axvline(line2, linestyle='--', color='k', linewidth=0.5)
+
+
+    ax.set_ylim(0., zmax+5.0)
+    #ax.set_xlim((tstart - t0)-0.2, (tstop-t0)+0.2)
+    ax.set_xlabel('MJD')
+
+    ax.ticklabel_format(axis="x", useOffset=False)
+
+    ax.legend(loc='lower right', shadow=True, fontsize='xx-small')
+
+    ax.set_ylabel('off-axis angle [$^{\\circ}$]')
+
+    #ax.set_xlim(np.min(agl_filt-t0), np.max(agl_filt-t0))
+    ax.set_title(str(zmax)+'_'+str(tstart)+'_'+str(tstop))
 
 
 if __name__ == "__main__":
@@ -67,6 +110,9 @@ if __name__ == "__main__":
     parser.add_argument("--fermi", type=str, help="FERMI AP3 Filepath", required=True)
     parser.add_argument("--tstart", type=float, help="Tstart in MJD", required=True)
     parser.add_argument("--tstop", type=float, help="Tstop in MJD", required=True)
+    parser.add_argument("--path_offaxis", type=str, help="offaxis directory path", required=True)
+    parser.add_argument("--line1", type=float, help="vertical line1", required=False)
+    parser.add_argument("--line2", type=float, help="vertical line2", required=False)
 
     args = parser.parse_args()
 
@@ -77,14 +123,18 @@ if __name__ == "__main__":
     print(agile_data)
     tstart_tt = time_mjd_to_tt(args.tstart)
     tstop_tt = time_mjd_to_tt(args.tstop)
+    print(tstart_tt, tstop_tt)
     
     #---- Selecting data
     agile_data = agile_data[agile_data.tstart >= tstart_tt]
     agile_data = agile_data[agile_data.tstop <= tstop_tt]
-    print(agile_data)
+    print(agile_data["rate"]*1e8)
     fermi_data = fermi_data[fermi_data.Time_MJD >= args.tstart]
     fermi_data = fermi_data[fermi_data.Time_MJD <= args.tstop]
 
-    plot(agile_data, fermi_data)
+    f, (ax1, ax2) = plt.subplots(2)
+
+    plot_offaxis(ax1, args.path_offaxis, args.tstart, args.tstop, 60, 1, 0, args.line1, args.line2)
+    plot(ax2, agile_data, fermi_data, args.line1, args.line2)
 
     plt.show()
