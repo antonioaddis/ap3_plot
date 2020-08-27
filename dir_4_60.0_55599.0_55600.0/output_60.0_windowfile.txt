@@ -1,0 +1,21 @@
+
+#####
+60.0 55599.0 55600.0
+FERMI
+Total integration time= 72668.61  s Total_bins: 0.0 2430 Mean sep. <  60.0 : 36.1274
+Total absolute time= 86400.00
+Total time spent at separation <  60.0  deg: 14287.11 s
+Relative time spent at separation < 60.0  deg: 19.66 %
+Relative time spent at separation > 60.0  deg: 80.34 %
+Absolute time spent at separation < 60.0  deg: 16.54  %
+Absolute time spent at separation > 60.0  deg: 67.57  %
+Duty Cycle:  84.11 %
+AGILE
+Total integration time= 75574.00  s Total_bins: 0.0 75574 Mean sep. <  60.0 : 43.2165
+Total absolute time= 86400.00
+Total time spent at separation <  60.0  deg: 22480.00 s
+Relative time spent at separation < 60.0  deg: 29.75 %
+Relative time spent at separation > 60.0  deg: 70.25 %
+Absolute time spent at separation < 60.0  deg: 26.02  %
+Absolute time spent at separation > 60.0  deg: 61.45  %
+Duty Cycle:  87.47 %

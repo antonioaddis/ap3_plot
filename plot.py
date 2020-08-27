@@ -74,8 +74,11 @@ def plot(ax, agile_data, fermi_data, line1, line2):
         ax.errorbar(tmFermi, fermi_data["cts"], color="r", label="FERMI", fmt="none", yerr=yerrFermi, xerr=twFermi)
 
     if line1 and line2:
-        ax.axvline(line1, linestyle='--', color='k', linewidth=0.5)
-        ax.axvline(line2, linestyle='--', color='k', linewidth=0.5)
+        pass
+        #ax.axvline(line1, linestyle='--', color='k', linewidth=0.5)
+        #ax.axvline(line2, linestyle='--', color='k', linewidth=0.5)
+    
+
     
     ax.ticklabel_format(axis="x", useOffset=False)
     ax.set_ylabel('Photon counts')
@@ -98,10 +101,40 @@ def plot_offaxis(ax, path, tstart, tstop, zmax, step, t0, line1, line2):
     ax.plot(agl_filt - t0, agl_sep_filt, color='blue', label='AGILE')
 
     ax.plot(lat_filt - t0, lat_sep_filt, color='red', label='Fermi')
+
+    lat_filt2 = []
+    found = False
+    total_s_in_gti = 0
+    for i in range(len(lat_filt) - 1):
+
+        if (lat_filt[i+1] - lat_filt[i]) * 86400 >= 300:
+            
+            print("trovato intervallo a: ", lat_filt[i], lat_filt[i+1])
+            
+            lat_filt2.append(lat_filt[i])
+            lat_filt2.append(lat_filt[i+1])
+            
+            ax.axvline(lat_filt[i], linestyle='--', color='g', linewidth=0.5)
+            ax.axvline(lat_filt[i+1], linestyle='--', color='g', linewidth=0.5)
+
+    #######   GTI   ###
+    found = False
+    total_s_in_gti = 0
+    for l, s in zip(lat_filt, lat_sep_filt):
+
+        if not found and s <= zmax:
+            found = True
+            gti_time = l * 86400
+            ax.axvline(l, linestyle='--', color='k', linewidth=1)
         
-    ax.axvline(line2, linestyle='--', color='k', linewidth=0.5)
-
-
+        if found and s >= zmax:
+            found = False
+            gti_time = (l*86400) - gti_time
+            total_s_in_gti += gti_time
+            ax.axvline(l, linestyle='--', color='k', linewidth=1)
+    #######
+    
+    print("SECONDI TOTALI IN GTI", total_s_in_gti)
     ax.set_ylim(0., zmax+5.0)
     #ax.set_xlim((tstart - t0)-0.2, (tstop-t0)+0.2)
     ax.set_xlabel('MJD')
