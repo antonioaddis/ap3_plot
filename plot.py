@@ -170,9 +170,11 @@ def plot_offaxis(ax1, ax2, path, tstart, tstop, zmax, step, t0, arg_lines):
     for lines in gti_list:
         ax1.axvspan(xmin=lines[0], xmax=lines[1], facecolor='k', alpha=0.1)
         ax2.axvspan(xmin=lines[0], xmax=lines[1], facecolor='k', alpha=0.1) #bottom plot
+
     for lines in result:
         ax1.axvspan(xmin=lines[0], xmax=lines[1], facecolor='white')
         ax2.axvspan(xmin=lines[0], xmax=lines[1], facecolor='white') #bottom plot
+
     ######
 
     print("Total time in GTI", total_s_in_gti)
@@ -223,7 +225,7 @@ def main(agile, fermi, tstart, tstop, path, lines):
     fermi_data = fermi_data[fermi_data.tstop <= tstop_tt]
 
     #------Plotting data
-    f, (ax1, ax2) = plt.subplots(2)
+    f, (ax1, ax2) = plt.subplots(2, figsize=(20,10))
 
     plot_offaxis(ax1, ax2, path, tstart, tstop, 60, 1, 0, lines)
     plot(ax2, agile_data, fermi_data, lines)
