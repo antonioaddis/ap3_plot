@@ -54,18 +54,17 @@ def plot(ax, agile_data, fermi_data, arg_lines):
     plotrate = 0
     #---AGILE----
 
-    t_mjd = []
     tm = (time_tt_to_mjd(agile_data["tstart"]) + time_tt_to_mjd(agile_data["tstop"])) / 2
     agile_data.loc[agile_data['cts'] == 0, 'rateError'] = 0
     #yerr = agile_data["rateError"]*1e8
     if plotrate == 1:
         yerr = agile_data["rateError"]*1e8
-        print(agile_data["tstart"], agile_data["tstop"], agile_data["cts"], agile_data["exp"], agile_data["rate"]*1e8, agile_data["rateError"]*1e8)
+        #print(agile_data["tstart"], agile_data["tstop"], agile_data["cts"], agile_data["exp"], agile_data["rate"]*1e8, agile_data["rateError"]*1e8)
         tw = tm -  time_tt_to_mjd(agile_data["tstart"])
         ax.errorbar(tm, agile_data["rate"]*1e8, color="b", label="AGILE", fmt='.', yerr=yerr, xerr=tw)
     if plotrate == 0:
         yerr = agile_data["rateError"]*agile_data["exp"]
-        print(agile_data["tstart"], agile_data["tstop"], agile_data["cts"], agile_data["exp"], agile_data["rate"]*1e8, agile_data["rateError"]*1e8)
+        #print(agile_data["tstart"], agile_data["tstop"], agile_data["cts"], agile_data["exp"], agile_data["rate"]*1e8, agile_data["rateError"]*1e8)
         tw = tm -  time_tt_to_mjd(agile_data["tstart"])
         ax.errorbar(tm, agile_data["cts"], color="b", label="AGILE", fmt='.', yerr=yerr, xerr=tw)
 
@@ -92,6 +91,9 @@ def plot(ax, agile_data, fermi_data, arg_lines):
         twFermi = tmFermi -  time_tt_to_mjd(fermi_data["tstart"])
         #ax.errorbar(fermi_data["Time_MJD"], fermi_data["count_rate_(cts/s)"]*1e8, color="r", label="FERMI", fmt="none", xerr=[fermi_data["Time_MJD"] - tstart,tstop - fermi_data["Time_MJD"]], yerr=fermi_yerr)
         ax.errorbar(tmFermi, fermi_data["cts"], color="r", label="FERMI", fmt="none", yerr=yerrFermi, xerr=twFermi)
+    
+    time_diff = fermi_data["tstop"] - fermi_data["tstart"]
+    print("Total time in GTI(bottom plot)" ,time_diff.sum())
         
 
 
@@ -124,7 +126,7 @@ def plot_offaxis(ax1, ax2, path, tstart, tstop, zmax, step, t0, arg_lines):
 
         if (lat_filt[i+1] - lat_filt[i]) * 86400 >= 300:
 
-            print("found: ", lat_filt[i], lat_filt[i+1])
+            print("Green box in: ", lat_filt[i], lat_filt[i+1])
 
             lat_filt2.append([lat_filt[i], lat_filt[i+1]])
 
@@ -182,14 +184,14 @@ def plot_offaxis(ax1, ax2, path, tstart, tstop, zmax, step, t0, arg_lines):
     try:
         for i in range(0,len(arg_lines),2):
 
-            ax1.axvline(arg_lines[i], linestyle='--', color='k', linewidth=0.5)
-            ax1.axvline(arg_lines[i+1], linestyle='--', color='k', linewidth=0.5)
-            ax2.axvline(arg_lines[i], linestyle='--', color='k', linewidth=0.5)
-            ax2.axvline(arg_lines[i+1], linestyle='--', color='k', linewidth=0.5)
+            #ax1.axvline(arg_lines[i], linestyle='--', color='k', linewidth=0.5)
+            #ax1.axvline(arg_lines[i+1], linestyle='--', color='k', linewidth=0.5)
+            #ax2.axvline(arg_lines[i], linestyle='--', color='k', linewidth=0.5)
+            #ax2.axvline(arg_lines[i+1], linestyle='--', color='k', linewidth=0.5)
 
 
-            ax1.axvspan(xmin=arg_lines[i], xmax=arg_lines[i+1], facecolor='y')
-            ax2.axvspan(xmin=arg_lines[i], xmax=arg_lines[i+1], facecolor='y')
+            ax1.axvspan(xmin=arg_lines[i], xmax=arg_lines[i+1], facecolor='y', alpha=0.1)
+            ax2.axvspan(xmin=arg_lines[i], xmax=arg_lines[i+1], facecolor='y', alpha=0.1)
     except:
         print("No lines")
     
