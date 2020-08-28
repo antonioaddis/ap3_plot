@@ -206,25 +206,13 @@ def plot_offaxis(ax1, ax2, path, tstart, tstop, zmax, step, t0, arg_lines):
     ax1.set_title(str(zmax)+'_'+str(tstart)+'_'+str(tstop))
 
 
-def main():
-    #--- Parsing args-------
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--agile", type=str, help="AGILE AP3 Filepath", required=True)
-    parser.add_argument("--fermi", type=str, help="FERMI AP3 Filepath", required=True)
-    parser.add_argument("--tstart", type=float, help="Tstart in MJD", required=True)
-    parser.add_argument("--tstop", type=float, help="Tstop in MJD", required=True)
-    parser.add_argument("--path_offaxis", type=str, help="offaxis directory path", required=True)
-    parser.add_argument("--lines", type=float, nargs="+", help="vertical lines", required=False)
-
-    args = parser.parse_args()
-
-
+def main(agile, fermi, tstart, tstop, path, lines):
     #---- Loading data -----
-    agile_data = pd.read_csv(args.agile, header=0, sep=" ")
-    fermi_data = pd.read_csv(args.fermi, header=0, sep=" ")
+    agile_data = pd.read_csv(agile, header=0, sep=" ")
+    fermi_data = pd.read_csv(fermi, header=0, sep=" ")
     #print(agile_data)
-    tstart_tt = time_mjd_to_tt(args.tstart)
-    tstop_tt = time_mjd_to_tt(args.tstop)
+    tstart_tt = time_mjd_to_tt(tstart)
+    tstop_tt = time_mjd_to_tt(tstop)
     #print(tstart_tt, tstop_tt)
 
     #---- Selecting data
@@ -237,11 +225,23 @@ def main():
     #------Plotting data
     f, (ax1, ax2) = plt.subplots(2)
 
-    plot_offaxis(ax1, ax2, args.path_offaxis, args.tstart, args.tstop, 60, 1, 0, args.lines)
-    plot(ax2, agile_data, fermi_data, args.lines)
+    plot_offaxis(ax1, ax2, path, tstart, tstop, 60, 1, 0, lines)
+    plot(ax2, agile_data, fermi_data, lines)
 
     plt.show()
-    f.savefig('merged_plot_'+str(args.tstart)+'_'+str(args.tstop)+'.'+str('pdf'), format="pdf")
+    f.savefig('merged_plot_'+str(tstart)+'_'+str(tstop)+'.'+str('pdf'), format="pdf")
 
 if __name__ == "__main__":
-    main()
+    
+    #--- Parsing args-------
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--agile", type=str, help="AGILE AP3 Filepath", required=True)
+    parser.add_argument("--fermi", type=str, help="FERMI AP3 Filepath", required=True)
+    parser.add_argument("--tstart", type=float, help="Tstart in MJD", required=True)
+    parser.add_argument("--tstop", type=float, help="Tstop in MJD", required=True)
+    parser.add_argument("--path_offaxis", type=str, help="offaxis directory path", required=True)
+    parser.add_argument("--lines", type=float, nargs="+", help="vertical lines", required=False)
+
+    args = parser.parse_args()
+
+    main(args.agile, args.fermi, args.tstart, args.tstop, args.path_offaxis, args.lines)
