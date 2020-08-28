@@ -29,7 +29,27 @@ def time_mjd_to_tt(timemjd):
         """
         return (timemjd - 53005.0) * 86400.0
 
-def plot(ax, agile_data, fermi_data, line1, line2):
+
+def search_interval(arr1, arr2):
+    result = []
+    i = 0
+    j = 0
+
+    n = len(arr1)
+    m = len(arr2)
+    while i < n and j < m:
+        l = max(arr1[i][0], arr2[j][0])
+        r = min(arr1[i][1], arr2[j][1])
+        if l < r:
+            #print('{', l, ',', r, '}')
+            result.append([l,r])
+        if arr1[i][1] < arr2[j][1]:
+            i += 1
+        else:
+            j += 1
+    return result
+
+def plot(ax, agile_data, fermi_data, arg_lines):
 
     plotrate = 0
     #---AGILE----
@@ -48,7 +68,7 @@ def plot(ax, agile_data, fermi_data, line1, line2):
         print(agile_data["tstart"], agile_data["tstop"], agile_data["cts"], agile_data["exp"], agile_data["rate"]*1e8, agile_data["rateError"]*1e8)
         tw = tm -  time_tt_to_mjd(agile_data["tstart"])
         ax.errorbar(tm, agile_data["cts"], color="b", label="AGILE", fmt='.', yerr=yerr, xerr=tw)
-    
+
     #---Fermi----
     # tstart = fermi_data["Time_MJD"] - fermi_binsize/2
     # tstop = tstart + fermi_binsize
@@ -72,23 +92,19 @@ def plot(ax, agile_data, fermi_data, line1, line2):
         twFermi = tmFermi -  time_tt_to_mjd(fermi_data["tstart"])
         #ax.errorbar(fermi_data["Time_MJD"], fermi_data["count_rate_(cts/s)"]*1e8, color="r", label="FERMI", fmt="none", xerr=[fermi_data["Time_MJD"] - tstart,tstop - fermi_data["Time_MJD"]], yerr=fermi_yerr)
         ax.errorbar(tmFermi, fermi_data["cts"], color="r", label="FERMI", fmt="none", yerr=yerrFermi, xerr=twFermi)
+        
 
-    if line1 and line2:
-        pass
-        #ax.axvline(line1, linestyle='--', color='k', linewidth=0.5)
-        #ax.axvline(line2, linestyle='--', color='k', linewidth=0.5)
-    
 
-    
+
     ax.ticklabel_format(axis="x", useOffset=False)
     ax.set_ylabel('Photon counts')
     ax.set_xlabel("MJD")
     ax.legend(loc='upper right', shadow=True, fontsize='xx-small')
 
-def plot_offaxis(ax, path, tstart, tstop, zmax, step, t0, line1, line2):
+def plot_offaxis(ax1, ax2, path, tstart, tstop, zmax, step, t0, arg_lines):
 
     agl_meantime, agl_separation = np.loadtxt(path+'/time_vs_separation_agile.txt', unpack=True)
-    
+
     agl_filt = agl_meantime[(agl_meantime > tstart) & (agl_meantime < tstop)]
     agl_sep_filt = agl_separation[(agl_meantime > tstart) & (agl_meantime < tstop)]
 
@@ -98,59 +114,89 @@ def plot_offaxis(ax, path, tstart, tstop, zmax, step, t0, line1, line2):
     lat_filt = lat_meantime[(lat_meantime > tstart) & (lat_meantime < tstop)]
     lat_sep_filt = lat_separation[(lat_meantime > tstart) & (lat_meantime < tstop)]
 
-    ax.plot(agl_filt - t0, agl_sep_filt, color='blue', label='AGILE')
+    ax1.plot(agl_filt - t0, agl_sep_filt, color='blue', label='AGILE')
 
-    ax.plot(lat_filt - t0, lat_sep_filt, color='red', label='Fermi')
+    ax1.plot(lat_filt - t0, lat_sep_filt, color='red', label='Fermi')
 
+    #-----green boxes----
     lat_filt2 = []
-    found = False
-    total_s_in_gti = 0
     for i in range(len(lat_filt) - 1):
 
         if (lat_filt[i+1] - lat_filt[i]) * 86400 >= 300:
-            
-            print("trovato intervallo a: ", lat_filt[i], lat_filt[i+1])
-            
-            lat_filt2.append(lat_filt[i])
-            lat_filt2.append(lat_filt[i+1])
-            
-            ax.axvline(lat_filt[i], linestyle='--', color='g', linewidth=0.5)
-            ax.axvline(lat_filt[i+1], linestyle='--', color='g', linewidth=0.5)
 
-    #######   GTI   ###
+            print("found: ", lat_filt[i], lat_filt[i+1])
+
+            lat_filt2.append([lat_filt[i], lat_filt[i+1]])
+
+            ax1.axvline(lat_filt[i], linestyle='--', color='g', linewidth=1)
+            ax1.axvline(lat_filt[i+1], linestyle='--', color='g', linewidth=1)
+    ######
+
+
+    #######------GTI------###
     found = False
     total_s_in_gti = 0
+    gti_list = []
     for l, s in zip(lat_filt, lat_sep_filt):
 
         if not found and s <= zmax:
             found = True
             gti_time = l * 86400
-            ax.axvline(l, linestyle='--', color='k', linewidth=1)
-        
+            #ax.axvline(l, linestyle='--', color='k', linewidth=0.5)
+            l1 = l
+
         if found and s >= zmax:
             found = False
             gti_time = (l*86400) - gti_time
             total_s_in_gti += gti_time
-            ax.axvline(l, linestyle='--', color='k', linewidth=1)
-    #######
+            #ax.axvline(l, linestyle='--', color='k', linewidth=0.5)
+            l2 = l
+            gti_list.append([l1,l2])
+    ######
+
     
-    print("SECONDI TOTALI IN GTI", total_s_in_gti)
-    ax.set_ylim(0., zmax+5.0)
+    
+    #####-----cleaning------
+    result = search_interval(lat_filt2, gti_list)
+
+    for l in result:
+        #ax.axvline(l[0], linestyle='--', color='k', linewidth=1)
+        #ax.axvline(l[1], linestyle='--', color='k', linewidth=1)
+
+        seconds = (l[1] - l[0]) * 86400
+
+        total_s_in_gti = total_s_in_gti - seconds
+
+    for lines in gti_list:
+        ax1.axvspan(xmin=lines[0], xmax=lines[1], facecolor='k', alpha=0.1)
+        ax2.axvspan(xmin=lines[0], xmax=lines[1], facecolor='k', alpha=0.1) #bottom plot
+    for lines in result:
+        ax1.axvspan(xmin=lines[0], xmax=lines[1], facecolor='white')
+        ax2.axvspan(xmin=lines[0], xmax=lines[1], facecolor='white') #bottom plot
+    ######
+
+    print("Total time in GTI", total_s_in_gti)
+
+    for i in range(0,len(arg_lines),2):
+        ax1.axvspan(xmin=arg_lines[i], xmax=arg_lines[i+1], facecolor='y')
+        ax2.axvspan(xmin=arg_lines[i], xmax=arg_lines[i+1], facecolor='y')
+    
+
+    ax1.set_ylim(0., zmax+5.0)
     #ax.set_xlim((tstart - t0)-0.2, (tstop-t0)+0.2)
-    ax.set_xlabel('MJD')
+    ax1.set_xlabel('MJD')
 
-    ax.ticklabel_format(axis="x", useOffset=False)
+    ax1.ticklabel_format(axis="x", useOffset=False)
 
-    ax.legend(loc='lower right', shadow=True, fontsize='xx-small')
+    ax1.legend(loc='lower right', shadow=True, fontsize='xx-small')
 
-    ax.set_ylabel('off-axis angle [$^{\\circ}$]')
+    ax1.set_ylabel('off-axis angle [$^{\\circ}$]')
 
     #ax.set_xlim(np.min(agl_filt-t0), np.max(agl_filt-t0))
-    ax.set_title(str(zmax)+'_'+str(tstart)+'_'+str(tstop))
+    ax1.set_title(str(zmax)+'_'+str(tstart)+'_'+str(tstop))
 
 
-if __name__ == "__main__":
-
+def main():
     #--- Parsing args-------
     parser = argparse.ArgumentParser()
     parser.add_argument("--agile", type=str, help="AGILE AP3 Filepath", required=True)
@@ -158,8 +204,7 @@ if __name__ == "__main__":
     parser.add_argument("--tstart", type=float, help="Tstart in MJD", required=True)
     parser.add_argument("--tstop", type=float, help="Tstop in MJD", required=True)
     parser.add_argument("--path_offaxis", type=str, help="offaxis directory path", required=True)
-    parser.add_argument("--line1", type=float, help="vertical line1", required=False)
-    parser.add_argument("--line2", type=float, help="vertical line2", required=False)
+    parser.add_argument("--lines", type=float, nargs="+", help="vertical lines", required=False)
 
     args = parser.parse_args()
 
@@ -171,7 +216,7 @@ if __name__ == "__main__":
     tstart_tt = time_mjd_to_tt(args.tstart)
     tstop_tt = time_mjd_to_tt(args.tstop)
     #print(tstart_tt, tstop_tt)
-    
+
     #---- Selecting data
     agile_data = agile_data[agile_data.tstart >= tstart_tt]
     agile_data = agile_data[agile_data.tstop <= tstop_tt]
@@ -179,10 +224,14 @@ if __name__ == "__main__":
     fermi_data = fermi_data[fermi_data.tstart >= tstart_tt]
     fermi_data = fermi_data[fermi_data.tstop <= tstop_tt]
 
+    #------Plotting data
     f, (ax1, ax2) = plt.subplots(2)
 
-    plot_offaxis(ax1, args.path_offaxis, args.tstart, args.tstop, 60, 1, 0, args.line1, args.line2)
-    plot(ax2, agile_data, fermi_data, args.line1, args.line2)
+    plot_offaxis(ax1, ax2, args.path_offaxis, args.tstart, args.tstop, 60, 1, 0, args.lines)
+    plot(ax2, agile_data, fermi_data, args.lines)
 
     plt.show()
     f.savefig('merged_plot_'+str(args.tstart)+'_'+str(args.tstop)+'.'+str('pdf'), format="pdf")
+
+if __name__ == "__main__":
+    main()
