@@ -177,9 +177,19 @@ def plot_offaxis(ax1, ax2, path, tstart, tstop, zmax, step, t0, arg_lines):
 
     print("Total time in GTI", total_s_in_gti)
 
-    for i in range(0,len(arg_lines),2):
-        ax1.axvspan(xmin=arg_lines[i], xmax=arg_lines[i+1], facecolor='y')
-        ax2.axvspan(xmin=arg_lines[i], xmax=arg_lines[i+1], facecolor='y')
+    try:
+        for i in range(0,len(arg_lines),2):
+
+            ax1.axvline(arg_lines[i], linestyle='--', color='k', linewidth=0.5)
+            ax1.axvline(arg_lines[i+1], linestyle='--', color='k', linewidth=0.5)
+            ax2.axvline(arg_lines[i], linestyle='--', color='k', linewidth=0.5)
+            ax2.axvline(arg_lines[i+1], linestyle='--', color='k', linewidth=0.5)
+
+
+            ax1.axvspan(xmin=arg_lines[i], xmax=arg_lines[i+1], facecolor='y')
+            ax2.axvspan(xmin=arg_lines[i], xmax=arg_lines[i+1], facecolor='y')
+    except:
+        print("No lines")
     
 
     ax1.set_ylim(0., zmax+5.0)
